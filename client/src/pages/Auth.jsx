@@ -12,23 +12,30 @@ import { setUserData } from '../redux/userSlice';
 function Auth({isModel = false}) {
     const dispatch = useDispatch()
 
-    const handleGoogleAuth = async () => {
-        try {
-            const response = await signInWithPopup(auth,provider)
-            let User = response.user
-            let name = User.displayName
-            let email = User.email
-            const result = await axios.post(ServerUrl + "/api/auth/google" , {name , email} , {withCredentials:true})
-            dispatch(setUserData(result.data))
-            
+  const handleGoogleAuth = async () => {
+    try {
+        const response = await signInWithPopup(auth, provider)
 
+        const User = response.user
 
-            
-        } catch (error) {
-            console.log(error)
-              dispatch(setUserData(null))
+        const payload = {
+            name: User.displayName,
+            email: User.email
         }
+
+        const result = await axios.post(
+            ServerUrl + "/api/auth/google",
+            payload,
+            { withCredentials: true }
+        )
+
+        dispatch(setUserData(result.data))
+
+    } catch (error) {
+        console.log("Google Auth Error:", error)
+        dispatch(setUserData(null))
     }
+}
   return (
     <div className={`
       w-full 

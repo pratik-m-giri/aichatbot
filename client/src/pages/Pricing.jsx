@@ -56,75 +56,54 @@ function Pricing() {
     },
   ];
 
-const loadRazorpay = () => {
-  return new Promise((resolve) => {
-    const script = document.createElement("script");
-    script.src = "https://checkout.razorpay.com/v1/checkout.js";
-    script.onload = () => resolve(true);
-    script.onerror = () => resolve(false);
-    document.body.appendChild(script);
-  });
-};
 
-const handlePayment = async (plan) => {
 
-  const isLoaded = await loadRazorpay();
+  const handlePayment = async (plan) => {
+    try {
+      setLoadingPlan(plan.id)
 
-  if (!isLoaded) {
-    alert("Razorpay SDK failed to load");
-    return;
-  }
+      const amount =  
+      plan.id === "basic" ? 100 :
+      plan.id === "pro" ? 500 : 0;
 
-  try {
-    setLoadingPlan(plan.id)
+      const result = await axios.post(ServerUrl + "/api/payment/order" , {
+        planId: plan.id,
+        amount: amount,
+        credits: plan.credits,
+      },{withCredentials:true})
+      
 
-    const amount =  
-    plan.id === "basic" ? 100 :
-    plan.id === "pro" ? 500 : 0;
-
-    const result = await axios.post(ServerUrl + "/api/payment/order" , {
-      planId: plan.id,
-      amount: amount,
-      credits: plan.credits,
-    },{withCredentials:true})
-    
-
-    const options = {
-key: "rzp_test_SdKcyqGa31sjTY",
+      const options = {
+      key: import.meta.env.VITE_RAZORPAY_KEY_ID,
       amount: result.data.amount,
       currency: "INR",
       name: "InterviewIQ.AI",
       description: `${plan.name} - ${plan.credits} Credits`,
       order_id: result.data.id,
 
-      handler: async function (response) {
-        const verifypay = await axios.post(
-          ServerUrl + "/api/payment/verify",
-          response,
-          { withCredentials: true }
-        );
+      handler:async function (response) {
+        const verifypay = await axios.post(ServerUrl + "/api/payment/verify" ,response , {withCredentials:true})
+        dispatch(setUserData(verifypay.data.user))
 
-        dispatch(setUserData(verifypay.data.user));
+          alert("Payment Successful 🎉 Credits Added!");
+          navigate("/")
 
-        alert("Payment Successful 🎉 Credits Added!");
-        navigate("/");
       },
-
-      theme: {
+      theme:{
         color: "#10b981",
       },
-    };
 
-    const rzp = new window.Razorpay(options);
-    rzp.open();
+      }
 
-    setLoadingPlan(null);
+      const rzp = new window.Razorpay(options)
+      rzp.open()
 
-  } catch (error) {
-    console.log(error);
-    setLoadingPlan(null);
+      setLoadingPlan(null);
+    } catch (error) {
+     console.log(error)
+     setLoadingPlan(null);
+    }
   }
-};
 
 
 

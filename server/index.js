@@ -13,10 +13,8 @@ dotenv.config()
 
 const app = express()
 
-// Database Connection
 connectDb()
 
-// Middleware
 app.use(cors({
     origin: [
         "http://localhost:5173",
@@ -28,16 +26,13 @@ app.use(cors({
 app.use(express.json())
 app.use(cookieParser())
 
-// Routes
 app.use("/api/auth", authRouter)
 app.use("/api/user", userRouter)
 app.use("/api/interview", interviewRouter)
 app.use("/api/payment", paymentRouter)
 
-// Test Route
 app.get("/", (req, res) => {
-    res.send("API Running Successfully")
+    res.send("Backend Running")
 })
 
-// Export App For Vercel
 export default app

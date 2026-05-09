@@ -11,8 +11,11 @@ import paymentRouter from "./routes/payment.route.js"
 
 const app = express()
 app.use(cors({
-    origin:"http://localhost:5173",
-    credentials:true
+    origin: [
+        "http://localhost:5173",
+        "https://aichatbot-nine-eta.vercel.app"
+    ],
+    credentials: true
 }))
 
 app.use(express.json())
